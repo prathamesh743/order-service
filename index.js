@@ -2,10 +2,10 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const axios = require('axios');
 const app = express();
-const port = 3002;
+const port = process.env.PORT || 3002; // Use Render's PORT or default to 3002 locally
 
 // Initialize SQLite database
-const db = new sqlite3.Database(':memory:'); // In-memory for simplicity; use a file for persistence
+const db = new sqlite3.Database(':memory:'); // In-memory for simplicity
 
 // Create orders table
 db.serialize(() => {
@@ -24,7 +24,7 @@ app.post('/orders', async (req, res) => {
 
   // Check if user exists by calling User Service
   try {
-    await axios.get(`http://localhost:3001/users/${userId}`);
+    await axios.get(`${process.env.USER_SERVICE_URL}/users/${userId}`);
   } catch (error) {
     if (error.response && error.response.status === 404) {
       return res.status(400).json({ error: 'User not found' });
@@ -58,6 +58,6 @@ app.get('/orders/:id', (req, res) => {
 });
 
 // Start the server
-app.listen(port, () => {
-  console.log(`Order Service running on http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => { // Bind to 0.0.0.0 for Render
+  console.log(`Order Service running on port ${port}`);
 });
